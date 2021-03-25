@@ -1,0 +1,3 @@
+Algorithms for indicators and trading bot
+
+Maintainer: Pranav Vohra

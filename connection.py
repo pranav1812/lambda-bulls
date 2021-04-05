@@ -75,15 +75,19 @@ def getHistoricData(symbol, interval, fromDate, toDate):
 
 #*********************************
 
+feedString= ''
 def onTick(ws, tick):
     print('Ticks: ', tick)
 
 def onConnect(ws, response):
-    ws.send_request('nse_cm|3721', 'mw')
+    global feedString
+    ws.send_request(feedString, 'mw')
 
 def onClose(ws, code, reason):
     ws.stop()
     print('connection dropped')
+    print(code)
+    print(reason)
 
 def createSocketConnection(symbols):
     feedToken= apiLogin()['feedToken']
@@ -95,8 +99,10 @@ def createSocketConnection(symbols):
         else:
             print('{} is not a recognized symbol, check stockTokens.py for reference\ntry again'.format(i))
             sys.exit()
-    tokenString= '&'.join(tokenList)
-    print(tokenString)
+
+    global feedString
+    feedString= '&'.join(tokenList)
+    print(feedString)
 
     ss= WebSocket(feedToken, authInfo['clientCode'])
     ss.on_connect= onConnect
@@ -112,5 +118,5 @@ def createSocketConnection(symbols):
 
 # space for debugging
 if __name__=='__main__':
-    getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
-    #createSocketConnection(['TATACOMM'])
+    #getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
+    createSocketConnection(['TATACOMM', 'TATAMOTORS', 'TATAPOW'])

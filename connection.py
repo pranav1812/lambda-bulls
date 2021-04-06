@@ -143,5 +143,5 @@ def createSocketConnection(symbols):
 
 # space for debugging
 if __name__=='__main__':
-    #getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
-    createSocketConnection(['TATACOMM', 'TATAMOTORS', 'TATAPOW'])
+    getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
+    createSocketConnection(['TATACOMM', 'TATAMOTORS', 'TATAPOWER'])

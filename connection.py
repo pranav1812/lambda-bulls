@@ -76,11 +76,31 @@ def getHistoricData(symbol, interval, fromDate, toDate):
 #*********************************
 
 feedString= ''
+daySummary= {
+    'currentPrice':'NA',
+    'commulativeVolume': 'NA',
+    'buyOffers': 'NA',
+    'sellOffers': 'NA',
+    'bestBuyPrice': 'NA',
+    'bestSellPrice': 'NA',
+    'bestBuyVol': 'NA',
+    'bestSellVol': 'NA'
+}
+
 def onTick(ws, tick):
+    global daySummary
     print('Ticks: ', tick)
+    for i in tick:
+        try:
+            if i['name']== 'sf':
+                if df.socket(i, daySummary[i['tk']])!=0:
+                    daySummary[i['tk']]= df.socket(i, daySummary[i['tk']])
+        except:
+            print('some error might have occured. But nothing to worry')
 
 def onConnect(ws, response):
     global feedString
+    print('connecting')
     ws.send_request(feedString, 'mw')
 
 def onClose(ws, code, reason):
@@ -91,6 +111,7 @@ def onClose(ws, code, reason):
 
 def createSocketConnection(symbols):
     feedToken= apiLogin()['feedToken']
+    
     tokenList= []
     
     for i in symbols:
@@ -101,10 +122,13 @@ def createSocketConnection(symbols):
             sys.exit()
 
     global feedString
+
     feedString= '&'.join(tokenList)
     print(feedString)
-
+    
+    
     ss= WebSocket(feedToken, authInfo['clientCode'])
+    
     ss.on_connect= onConnect
 
     ss.on_ticks= onTick
@@ -112,6 +136,7 @@ def createSocketConnection(symbols):
     ss.on_close= onClose
 
     ss.connect()
+    print(feedToken)
 
 #*****************************
 

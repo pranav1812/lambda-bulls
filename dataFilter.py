@@ -1,7 +1,24 @@
 import json
+import indicators
 
-def socket():
-    pass
+def socket(feed, prev={}):
+    temp= {}
+    try:
+        # only full feed will not raise exception
+        temp['currentPrice']= feed['ltp']
+        temp['commulativeVolume']= feed['vol']
+        temp['buyOffers']= feed['tbq']
+        temp['sellOffers']= feed['tsq']
+        temp['bestBuyPrice']= feed['bp']
+        temp['bestSellPrice']= feed['sp']
+        temp['bestBuyVol']= feed['bq']
+        temp['bestSellVol']= feed['bs']
+        # indicators bhi lagane hain yahan pe
+        # prev indicates dynamically made dictionary upto now
+    except:
+        print('required data missing in the tick')
+        return 0
+    return temp
 
 def historicDataFilter(data):
     # data is in the form of string

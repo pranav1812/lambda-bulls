@@ -23,14 +23,17 @@ def apiLogin():
     smartApi.generateToken(refreshToken)
     
     print("successfully logged in")
+    print('ft', feedToken)
     return {
         'login': login,
-        'feedToken': feedToken
+        'feedToken': feedToken,
+        'apiObj': smartApi
     }
 
 def getHistoricData(symbol, interval, fromDate, toDate):
     # agar boht sara data aane wala hai toh usse chunks mai call krna, ie. period ko parts mai break krna aur parallely pichhle wale ko operate krna
-    login= apiLogin()['login']
+    apiLoginObj= apiLogin()
+    apiObj= apiLoginObj['apiObj']
     try:
         tkn= stockTokens[symbol]
     except:
@@ -45,32 +48,20 @@ def getHistoricData(symbol, interval, fromDate, toDate):
     'todate': toDate
     }
 
-    url= 'https://apiconnect.angelbroking.com/rest/secure/angelbroking/historical/v1/getCandleData'
+    res= apiObj.getCandleData(reqObj)
 
-    headers= {
-        'X-PrivateKey': authInfo['apiKey'], 
-        'Accept': 'application/json', 
-        'X-SourceID': 'WEB', 
-        'X-ClientLocalIP': 'CLIENT_LOCAL_IP',
-        'X-ClientPublicIP': 'CLIENT_PUBLIC_IP',
-        'X-MACAddress': 'MAC_ADDRESS',
-        'X-UserType': 'USER', 
-        'Authorization': login['data']['jwtToken'], 
-        'Content-Type': 'application/json'
-    }
-    r= req.post(url, data= json.dumps(reqObj), headers= headers)
     
-    # print('encoding: ', r.encoding)
-    data= json.loads(r.text)
+    # data= json.loads(r.text)
     
-    while data['message']!= 'SUCCESS':
+    if res['message']!= 'SUCCESS':
         print('connection error occurred, try again 2-3 times')
         sys.exit()
+    data= res['data']
     print('successfully connected to historical api')
-    data= df.historicDataFilter(data['data'])
+    data= df.historicDataFilter(data)
     # print comment krna hai baad mai
-    print('data: \n', json.loads(data)[0])
-    # abb isse send kar skte hain
+    print('data: \n', json.loads(data))
+    # # abb isse send kar skte hain
 
 
 #*********************************
@@ -101,6 +92,8 @@ def onTick(ws, tick):
 def onConnect(ws, response):
     global feedString
     print('connecting')
+    print(feedString)
+    ws.websocket_connection()
     ws.send_request(feedString, 'mw')
 
 def onClose(ws, code, reason):
@@ -111,7 +104,7 @@ def onClose(ws, code, reason):
 
 def createSocketConnection(symbols):
     feedToken= apiLogin()['feedToken']
-    
+    print('ft2', feedToken)
     tokenList= []
     
     for i in symbols:
@@ -143,5 +136,6 @@ def createSocketConnection(symbols):
 
 # space for debugging
 if __name__=='__main__':
-    getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
+    #apiLogin()
+    #getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
     createSocketConnection(['TATACOMM', 'TATAMOTORS', 'TATAPOWER'])

@@ -2,3 +2,4 @@ Lib
 config.py
 __pycache__
 debug.py
+daySummary/

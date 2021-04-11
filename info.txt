@@ -1,0 +1,4 @@
+Note: Information stored in this file shall be transferred to readme.md file
+
+1. config.py file is required in the main folder to get config data
+2. daySummary folder is required in the main folder to save day summary

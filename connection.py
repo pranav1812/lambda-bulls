@@ -4,9 +4,10 @@ from smartapi import SmartConnect
 from config import authInfo
 from stockTokens import stockTokens
 import dataFilter as df
+import toCsv
 
 import json
-import requests as req
+from copy import deepcopy
 import sys
 
 
@@ -67,25 +68,46 @@ def getHistoricData(symbol, interval, fromDate, toDate):
 #*********************************
 
 feedString= ''
-daySummary= {
+
+# interval sumary for 1 stock, there shall be a dictionary of many such dictionaries
+intervalSummary= {
+    'intervalStartTime': 'NA',
     'currentPrice':'NA',
-    'commulativeVolume': 'NA',
+    'intervalOpen': 'NA',
+    'intervalHigh': 'NA',
+    'intervalLow': 'NA',
+    'dayHigh': 'NA',
+    'dayLow': 'NA',
     'buyOffers': 'NA',
     'sellOffers': 'NA',
     'bestBuyPrice': 'NA',
     'bestSellPrice': 'NA',
     'bestBuyVol': 'NA',
-    'bestSellVol': 'NA'
+    'bestSellVol': 'NA',
+    'vwap': 'NA',
+    'intervalVolume': 'NA',
+    'commulativeVolume': 'NA',
+    'intervalOpenVolume': 'NA'
+    # indicators bhi initiate krne hain
 }
 
+# dictionary of interval summaries of all stocks in consideration
+daySummary= {}
+
 def onTick(ws, tick):
-    global daySummary
+    global intervalSummary, daySummary
+
+    # comment krni hai ye line
     print('Ticks: ', tick)
     for i in tick:
         try:
             if i['name']== 'sf':
-                if df.socket(i, daySummary[i['tk']])!=0:
-                    daySummary[i['tk']]= df.socket(i, daySummary[i['tk']])
+                if not i['tk'] in daySummary:
+                    temp= deepcopy(intervalSummary)
+                    daySummary[i['tk']]= temp
+                x= df.socket(i, daySummary[i['tk']])
+                if x!=0:
+                    daySummary[i['tk']]= x
         except:
             print('some error might have occured. But nothing to worry')
 

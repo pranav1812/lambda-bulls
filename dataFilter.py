@@ -6,6 +6,7 @@ def socket(feed, prev={}):
     try:
         # only full feed will not raise exception
         temp['currentPrice']= feed['ltp']
+        temp['symbol']= prev['symbol'],
         temp['commulativeVolume']= feed['v']
         temp['buyOffers']= feed['tbq']
         temp['sellOffers']= feed['tsq']
@@ -21,11 +22,13 @@ def socket(feed, prev={}):
         temp['intervalVolume']= feed['v']-prev['intervalOpenVolume']
         temp['intervalOpenVolume']= prev['intervalOpenVolume']
         temp['intervalStartTime']= prev['intervalStartTime']
+
         # indicators bhi lagane hain yahan pe
         # prev indicates dynamically made dictionary upto now
     except:
         print('required data missing in the tick')
         return 0
+    #print('updated to:', temp)
     return temp
 
 def historicDataFilter(data):

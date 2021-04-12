@@ -9,6 +9,7 @@ import toCsv
 import json
 from copy import deepcopy
 import sys
+import datetime as dt
 
 
 def apiLogin():
@@ -72,12 +73,13 @@ feedString= ''
 # interval sumary for 1 stock, there shall be a dictionary of many such dictionaries
 intervalSummary= {
     'intervalStartTime': 'NA',
+    'symbol': 'NA',
     'currentPrice':'NA',
     'intervalOpen': 'NA',
-    'intervalHigh': 'NA',
-    'intervalLow': 'NA',
-    'dayHigh': 'NA',
-    'dayLow': 'NA',
+    'intervalHigh': float('-inf'),
+    'intervalLow': float('-inf'),
+    'dayHigh': float('-inf'),
+    'dayLow': float('inf'),
     'buyOffers': 'NA',
     'sellOffers': 'NA',
     'bestBuyPrice': 'NA',
@@ -85,29 +87,45 @@ intervalSummary= {
     'bestBuyVol': 'NA',
     'bestSellVol': 'NA',
     'vwap': 'NA',
-    'intervalVolume': 'NA',
-    'commulativeVolume': 'NA',
-    'intervalOpenVolume': 'NA'
+    'intervalVolume': 0,
+    'commulativeVolume': 0,
+    'intervalOpenVolume': 0
     # indicators bhi initiate krne hain
 }
 
+tokenSymbolMap= {}
 # dictionary of interval summaries of all stocks in consideration
 daySummary= {}
 
 def onTick(ws, tick):
-    global intervalSummary, daySummary
+    global intervalSummary, daySummary, tokenSymbolMap
 
     # comment krni hai ye line
-    print('Ticks: ', tick)
+    #print('Ticks: ', tick)
     for i in tick:
         try:
             if i['name']== 'sf':
                 if not i['tk'] in daySummary:
                     temp= deepcopy(intervalSummary)
+                    temp['symbol']= tokenSymbolMap[i['tk']]
                     daySummary[i['tk']]= temp
                 x= df.socket(i, daySummary[i['tk']])
                 if x!=0:
                     daySummary[i['tk']]= x
+
+
+                # ------------- save to CSV ------------------
+                diff= dt.datetime.now() - daySummary[i['tk']]['intervalStartTime'] 
+                if diff.total_seconds() > 5*60: # 5 mins
+                    toCsv.newEntry(daySummary[i['tk']], i['tk'], daySummary[i['tk']]['symbol'])
+                    daySummary[i['tk']]['intervalStartTime']= dt.datetime.now()
+                    daySummary[i['tk']]['intervalOpen']=  daySummary[i['tk']]['currentPrice']
+                    daySummary[i['tk']]['intervalHigh']= daySummary[i['tk']]['currentPrice']
+                    daySummary[i['tk']]['intervalLow']= daySummary[i['tk']]['currentPrice']
+                    daySummary[i['tk']]['intervalVolume']= 0
+                    daySummary[i['tk']]['intervalOpenVolume']= daySummary[i['tk']]['commulativeVolume']
+                # ------------- save to CSV ------------------
+                                    
         except:
             print('some error might have occured. But nothing to worry')
 
@@ -123,14 +141,18 @@ def onClose(ws, code, reason):
     print('connection dropped')
     print(code)
     print(reason)
+    print('-----------------trying to reconnect----------------')
+    createSocketConnection(['TATAMOTORS'])
 
 def createSocketConnection(symbols):
     feedToken= apiLogin()['feedToken']
     print('ft2', feedToken)
     tokenList= []
     
+    global tokenSymbolMap
     for i in symbols:
         if i in stockTokens:
+            tokenSymbolMap[stockTokens[i]]= i
             tokenList.append('nse_cm|'+stockTokens[i])
         else:
             print('{} is not a recognized symbol, check stockTokens.py for reference\ntry again'.format(i))
@@ -160,4 +182,4 @@ def createSocketConnection(symbols):
 if __name__=='__main__':
     #apiLogin()
     #getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
-    createSocketConnection(['TATACOMM', 'TATAMOTORS', 'TATAPOWER'])
+    createSocketConnection(['TATAMOTORS'])

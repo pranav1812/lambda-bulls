@@ -2,6 +2,7 @@ import pandas as pd
 import os # to check if a csv file with the specified name exists in day summary folder
 from datetime import datetime
 import sys
+from indicators import makeReady
 
 # dic => temporary interval summary dictionary of all selected stocks 
 
@@ -16,11 +17,16 @@ def newEntry(dic, token, symbol= 'unknown'): # function to insert a new row into
         fileName= generateFileName(token, symbol)
         if fileName in os.listdir(folder):
             df= pd.read_csv(os.path.join(folder, fileName))
-            df= df.append(dic, ignore_index= True)
+
+            # ------------- making the new entry ready, by inserting indicators ----------------
+            newDic= makeReady(dic, fileName)
+
+            df= df.append(newDic, ignore_index= True)
             df.to_csv(os.path.join(folder, fileName), index= False)
         else:
-            df= pd.DataFrame(columns= list(dic.keys()))
-            row= [dic[i] for i in dic]
+            newDic= makeReady(dic, fileName)
+            df= pd.DataFrame(columns= list(newDic.keys()))
+            row= [dic[i] for i in newDic]
             df.loc[0]= row
             df.to_csv(os.path.join(folder, fileName), index= False)
     except:

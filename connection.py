@@ -5,6 +5,7 @@ from config import authInfo
 from stockTokens import stockTokens
 import dataFilter as df
 import toCsv
+from strategy import strategy
 
 import json
 from copy import deepcopy
@@ -73,11 +74,13 @@ feedString= ''
 # interval sumary for 1 stock, there shall be a dictionary of many such dictionaries
 intervalSummary= {
     'intervalStartTime': 'NA',
+    'lastStrategyTime': 'NA',
     'symbol': 'NA',
+    'token': 'NA',
     'currentPrice':'NA',
     'intervalOpen': 'NA',
     'intervalHigh': float('-inf'),
-    'intervalLow': float('-inf'),
+    'intervalLow': float('inf'),
     'dayHigh': float('-inf'),
     'dayLow': float('inf'),
     'buyOffers': 'NA',
@@ -89,42 +92,55 @@ intervalSummary= {
     'vwap': 'NA',
     'intervalVolume': 0,
     'commulativeVolume': 0,
-    'intervalOpenVolume': 0
+    'intervalOpenVolume': 0,
+    'commulativeTotal': 0
     # indicators bhi initiate krne hain
 }
 
-tokenSymbolMap= {}
-# dictionary of interval summaries of all stocks in consideration
-daySummary= {}
+tokenSymbolMap= {} # reverse of stocktokens dictionary
+
+daySummary= {} #  dictionary of interval summaries of all stocks in consideration
 
 def onTick(ws, tick):
     global intervalSummary, daySummary, tokenSymbolMap
 
     # comment krni hai ye line
-    #print('Ticks: ', tick)
+    # print('Ticks: ', tick)
     for i in tick:
         try:
             if i['name']== 'sf':
                 if not i['tk'] in daySummary:
                     temp= deepcopy(intervalSummary)
-                    temp['symbol']= tokenSymbolMap[i['tk']]
+                    temp['symbol']= tokenSymbolMap[i['tk']] # example 'TATACHEM'
+                    temp['token']= i['tk'] # example '3561'
                     daySummary[i['tk']]= temp
+                    daySummary[i['tk']]['intervalStartTime']= dt.datetime.now()
+                    daySummary[i['tk']]['lastStrategyTime']= dt.datetime.now()
                 x= df.socket(i, daySummary[i['tk']])
                 if x!=0:
                     daySummary[i['tk']]= x
 
 
-                # ------------- save to CSV ------------------
+                # ------------- save to CSV after 5 minutes------------------
                 diff= dt.datetime.now() - daySummary[i['tk']]['intervalStartTime'] 
-                if diff.total_seconds() > 5*60: # 5 mins
+                if diff.total_seconds() >= 5*60: # 5 mins
                     toCsv.newEntry(daySummary[i['tk']], i['tk'], daySummary[i['tk']]['symbol'])
-                    daySummary[i['tk']]['intervalStartTime']= dt.datetime.now()
+                    # -----------------------------------------------------------------------------
+
+                    daySummary[i['tk']]['intervalStartTime']= dt.datetime.now() # roundoff to latest 5 min
+                    
+                    # -----------------------------------------------------------------------------
                     daySummary[i['tk']]['intervalOpen']=  daySummary[i['tk']]['currentPrice']
                     daySummary[i['tk']]['intervalHigh']= daySummary[i['tk']]['currentPrice']
                     daySummary[i['tk']]['intervalLow']= daySummary[i['tk']]['currentPrice']
                     daySummary[i['tk']]['intervalVolume']= 0
                     daySummary[i['tk']]['intervalOpenVolume']= daySummary[i['tk']]['commulativeVolume']
-                # ------------- save to CSV ------------------
+
+                # ------------- apply strategy function after 10 sec ------------------
+                diff= dt.datetime.now() - daySummary[i['tk']]['lastStrategyTime']
+                if diff.total_seconds() >= 10:
+                    strategy(daySummary[i['tk']])
+                    daySummary[i['tk']]['lastStrategyTime']= dt.datetime.now()
                                     
         except:
             print('some error might have occured. But nothing to worry')
@@ -152,7 +168,7 @@ def createSocketConnection(symbols):
     global tokenSymbolMap
     for i in symbols:
         if i in stockTokens:
-            tokenSymbolMap[stockTokens[i]]= i
+            tokenSymbolMap[stockTokens[i]]= i # eg. '3461': 'TATACHEM'
             tokenList.append('nse_cm|'+stockTokens[i])
         else:
             print('{} is not a recognized symbol, check stockTokens.py for reference\ntry again'.format(i))

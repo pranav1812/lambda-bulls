@@ -1,6 +1,9 @@
 import pandas as pd
 import os
-from copy import deepcopy
+
+
+# Note: Shayad RSI theek se code ni ho payega. Iski requirements discuss kar lenge
+
 
 def vwap(high, low, close, vol, commTotal, commVol):
     avg= (high+low+close)/3
@@ -18,8 +21,8 @@ def stochasticRSI(cost, low14, high14):
 def makeReady(dic, fileName):
     path= os.path.join(os.getcwd(), 'daySummary', fileName)
     df= pd.read_csv(path)
-    newDic= deepcopy(dic)
+    # update original dictionary. so don't make copy of dic
     # ----------------- logic here -----------------
     
     # -----------------logic ends ------------------
-    return newDic
+    return dic

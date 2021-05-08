@@ -1,8 +1,11 @@
+from numpy import NaN
 import pandas as pd 
 import os # to check if a csv file with the specified name exists in day summary folder
 from datetime import datetime
 import sys
+import json
 from indicators import makeReady
+import requests
 
 # dic => temporary interval summary dictionary of all selected stocks 
 
@@ -20,13 +23,24 @@ def newEntry(dic, token, symbol= 'unknown'): # function to insert a new row into
 
             # ------------- making the new entry ready, by inserting indicators ----------------
             newDic= makeReady(dic, fileName)
-
+            # original dictionary bhi update karni hai. By default pass by reference hi hota hai
+            
             df= df.append(newDic, ignore_index= True)
             df.to_csv(os.path.join(folder, fileName), index= False)
         else:
-            newDic= makeReady(dic, fileName)
-            df= pd.DataFrame(columns= list(newDic.keys()))
-            row= [dic[i] for i in newDic]
+            # call required data from node API and store the response to a dictionary called temp 
+
+            temp= {} # would be response from api. includes 1st vwap, pivot, 3 supports, 3 resistances, ema (13, 26, 50) 
+
+            # #################################################
+
+            # copy response dictionary to original dictionary. Called once per day for every share
+            for key in temp:
+                dic[key]= temp[key]
+
+            df= pd.DataFrame(columns= list(dic.keys()))
+            row= [dic[i] for i in dic]
+            
             df.loc[0]= row
             df.to_csv(os.path.join(folder, fileName), index= False)
     except:

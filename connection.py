@@ -101,6 +101,18 @@ tokenSymbolMap= {} # reverse of stocktokens dictionary
 
 daySummary= {} #  dictionary of interval summaries of all stocks in consideration
 
+def roundOffTime(x, gap):
+    y= ''
+    if gap=='minute':
+        y= dt.datetime(x.year, x.month, x.day, x.hour, 5*(x.minute//5) , 0, 0)
+    elif gap=='second':
+        y= dt.datetime(x.year, x.month, x.day, x.hour, x.minute, 10* (x.second//10), 0)
+    else:
+        print('unidentified gap value for roundoffTime function')
+        sys.exit()
+    return y
+
+
 def onTick(ws, tick):
     global intervalSummary, daySummary, tokenSymbolMap
 
@@ -127,7 +139,7 @@ def onTick(ws, tick):
                     toCsv.newEntry(daySummary[i['tk']], i['tk'], daySummary[i['tk']]['symbol'])
                     # -----------------------------------------------------------------------------
 
-                    daySummary[i['tk']]['intervalStartTime']= dt.datetime.now() # roundoff to latest 5 min
+                    daySummary[i['tk']]['intervalStartTime']= roundOffTime(dt.datetime.now(), 'minute') # roundoff to latest 5 min
                     
                     # -----------------------------------------------------------------------------
                     daySummary[i['tk']]['intervalOpen']=  daySummary[i['tk']]['currentPrice']
@@ -140,7 +152,7 @@ def onTick(ws, tick):
                 diff= dt.datetime.now() - daySummary[i['tk']]['lastStrategyTime']
                 if diff.total_seconds() >= 10:
                     strategy(daySummary[i['tk']])
-                    daySummary[i['tk']]['lastStrategyTime']= dt.datetime.now()
+                    daySummary[i['tk']]['lastStrategyTime']= roundOffTime(dt.datetime.now(), 'second') # roundoff to latest 10 sec
                                     
         except:
             print('some error might have occured. But nothing to worry')
@@ -199,3 +211,4 @@ if __name__=='__main__':
     #apiLogin()
     #getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
     createSocketConnection(['TATAMOTORS'])
+    

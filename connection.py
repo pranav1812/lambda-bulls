@@ -126,7 +126,8 @@ def onTick(ws, tick):
     for i in tick:
         for key in i:
             try:
-                i[key]= float(i[key])
+                if key!= 'tk':
+                    i[key]= float(i[key])
             except:
                 continue
         try:

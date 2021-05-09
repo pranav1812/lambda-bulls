@@ -93,8 +93,14 @@ intervalSummary= {
     'intervalVolume': 0,
     'commulativeVolume': 0,
     'intervalOpenVolume': 0,
-    'commulativeTotal': 0
-    # indicators bhi initiate krne hain
+    'commulativeTotal': 0,
+    'ema50':'NA',
+    'ema9':'NA',
+    'ema13':'NA',
+    'ema26':'NA',
+    'currentResistance':'NA',
+    'currentSupport':'NA'
+
 }
 
 tokenSymbolMap= {} # reverse of stocktokens dictionary
@@ -137,6 +143,7 @@ def onTick(ws, tick):
                 diff= dt.datetime.now() - daySummary[i['tk']]['intervalStartTime'] 
                 if diff.total_seconds() >= 5*60: # 5 mins
                     toCsv.newEntry(daySummary[i['tk']], i['tk'], daySummary[i['tk']]['symbol'])
+
                     # -----------------------------------------------------------------------------
 
                     daySummary[i['tk']]['intervalStartTime']= roundOffTime(dt.datetime.now(), 'minute') # roundoff to latest 5 min

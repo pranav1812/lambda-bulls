@@ -47,3 +47,4 @@ def historicDataFilter(data):
         }
         dataList[i]= json.dumps(obj)
     return json.dumps(dataList)
+

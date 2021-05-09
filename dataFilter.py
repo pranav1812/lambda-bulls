@@ -1,35 +1,29 @@
 import json
-import indicators
 
 def socket(feed, prev={}):
-    temp= {}
+
     try:
         # only full feed will not raise exception
-        temp['currentPrice']= feed['ltp']
-        temp['symbol']= prev['symbol'],
-        temp['commulativeVolume']= feed['v']
-        temp['buyOffers']= feed['tbq']
-        temp['sellOffers']= feed['tsq']
-        temp['bestBuyPrice']= feed['bp']
-        temp['bestSellPrice']= feed['sp']
-        temp['bestBuyVol']= feed['bq']
-        temp['bestSellVol']= feed['bs']
-        temp['vwap']= feed['ap']
-        temp['intervalHigh']= max(feed['ltp'], prev['intervalHigh'])
-        temp['intervalLow']= min(feed['ltp'], prev['intervalLow'])
-        temp['dayHigh']= max(feed['ltp'], prev['dayHigh'])
-        temp['dayLow']= min(feed['ltp'], prev['dayLow'])
-        temp['intervalVolume']= feed['v']-prev['intervalOpenVolume']
-        temp['intervalOpenVolume']= prev['intervalOpenVolume']
-        temp['intervalStartTime']= prev['intervalStartTime']
+        prev['currentPrice']= feed['ltp']
+        prev['commulativeVolume']= feed['v']
+        prev['buyOffers']= feed['tbq']
+        prev['sellOffers']= feed['tsq']
+        prev['bestBuyPrice']= feed['bp']
+        prev['bestSellPrice']= feed['sp']
+        prev['bestBuyVol']= feed['bq']
+        prev['bestSellVol']= feed['bs']
+        # prev['vwap']= feed['ap'] ........  will be updated by our own function
+        prev['intervalHigh']= max(feed['ltp'], prev['intervalHigh'])
+        prev['intervalLow']= min(feed['ltp'], prev['intervalLow'])
+        prev['dayHigh']= max(feed['ltp'], prev['dayHigh'])
+        prev['dayLow']= min(feed['ltp'], prev['dayLow'])
+        prev['intervalVolume']= feed['v']-prev['intervalOpenVolume']
 
-        # indicators bhi lagane hain yahan pe
-        # prev indicates dynamically made dictionary upto now
     except:
         print('required data missing in the tick')
         return 0
     #print('updated to:', temp)
-    return temp
+    return prev
 
 def historicDataFilter(data):
     # data is in the form of string

@@ -6,13 +6,13 @@ import os
 
 from toCsv import generateFileName
 
-def vwapStrategy(feed):
+def vwapStrategy(feed, df, weightage):
     buySum=0
     sellSum=0
     t1 = min(1, ( abs(feed['vwap'] -feed['currentPrice'])/(.03*feed['vwap']) ) )
-    if feed['currentPrice'] > feed['vwap']:
+    if feed['currentPrice'] > feed['vwap'] and df['currentPrice'].iloc[-1]< feed['vwap']:
         buySum+= t1*weightage['vwap']
-    elif feed['currentPrice'] < feed['vwap']:
+    elif feed['currentPrice'] < feed['vwap'] and df['currentPrice'].iloc[-1]> feed['vwap']:
         sellSum+= t1*weightage['vwap']
 
     return buySum,sellSum
@@ -20,27 +20,42 @@ def vwapStrategy(feed):
 def rsiStrategy(feed):
     pass
 
-def emaStrategy(feed,df,x):
+def emaStrategy(feed,df,x, weightage):
     buySum=0
     sellSum=0
-    if feed['currentPrice'] > currInterval['ema'+str(x)] and df.tail(1)['currentPrice'] < df.tail(1)['ema'+str(x)]:
+    if feed['currentPrice'] > feed['ema'+str(x)] and df['currentPrice'].iloc[-1] < df['ema'+str(x)].iloc[-1]:
         buySum+=weightage['ema']/4
-    elif feed['currentPrice'] < currInterval['ema'+str(x)] and df.tail(1)['currentPrice'] > df.tail(1)['ema'+str(x)]:
+    elif feed['currentPrice'] < feed['ema'+str(x)] and df['currentPrice'].iloc[-1] > df['ema'+str(x)].iloc[-1]:
         sellSum+=weightage['ema']/4
-    elif feed['currentPrice'] > currInterval['ema'+str(x)]:
+    elif feed['currentPrice'] > feed['ema'+str(x)]:
         buySum+=weightage['ema']/8
     else:
         sellSum+=weightage['ema']/8
     return buySum,sellSum
 
 
-def pivotStrategy(feed):
+def pivotStrategy(feed, df, weightage):
+    arr= [feed['s3'], feed['s2'], feed['s1'], feed['pivotpoint'], feed['r1'], feed['r2'], feed['r3']]
     buySum=0
     sellSum=0
-    if feed['currentPrice'] > feed['currentResistance']:
+    if feed['currentPrice'] > feed['currentResistance'] and df['currentPrice'].iloc[-1]< feed['currentResistance']:
         buySum+=weightage['piv']
-    elif feed['currentPrice'] < feed['currentSupport']:
+        feed['currentSupport']= feed['currentResistance']
+        try:
+            feed['currentResistance']= arr[arr.index(feed['currentResistance']) +1]
+        except:
+            ################################################
+            feed['currentResistance']= feed['currentResistance']*1.02
+            ################################################
+    elif feed['currentPrice'] < feed['currentSupport'] and df['currentPrice'].iloc[-1]> feed['currentSupport']:
         sellSum+=weightage['piv']
+        feed['currentResistance']= feed['currentSupport']
+        try:
+            feed['currentSupport']= arr[arr.index(feed['currentSupport']) -1]
+        except:
+            ################################################
+            feed['currentSupport']= feed['currentSupport']*0.98
+            ################################################
     return buySum,sellSum
 
 
@@ -70,12 +85,12 @@ def strategy(feed):
         buySum = 0
         sellSum = 0
 
-        vwapS = vwapStrategy(feed)
-        emaS9 = emaStrategy(feed,df,9)
-        emaS13 = emaStrategy(feed,df,13)
-        emaS26 = emaStrategy(feed,df,26)
-        emaS50 = emaStrategy(feed,df,50)
-        pivotS = pivotStrategy(feed)
+        vwapS = vwapStrategy(feed, df, weightage)
+        emaS9 = emaStrategy(feed,df,9, weightage)
+        emaS13 = emaStrategy(feed,df,13, weightage)
+        emaS26 = emaStrategy(feed,df,26, weightage)
+        emaS50 = emaStrategy(feed,df,50, weightage)
+        pivotS = pivotStrategy(feed, df, weightage)
 
         buySum = vwapS[0]+emaS50[0]+emaS26[0]+emaS13[0]+emaS9[0]+pivotS[0]
         sellSum = vwapS[1]+emaS50[1]+emaS26[1]+emaS13[1]+emaS9[1]+pivotS[1]
@@ -111,4 +126,3 @@ def strategy(feed):
 
         
     # pehle 5 min toh exist hi ni karegi file toh bass ignore karo
-    

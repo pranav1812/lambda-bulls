@@ -100,7 +100,6 @@ intervalSummary= {
     'ema26':'NA',
     'currentResistance':'NA',
     'currentSupport':'NA'
-
 }
 
 tokenSymbolMap= {} # reverse of stocktokens dictionary
@@ -125,6 +124,11 @@ def onTick(ws, tick):
     # comment krni hai ye line
     # print('Ticks: ', tick)
     for i in tick:
+        for key in i:
+            try:
+                i[key]= float(i[key])
+            except:
+                continue
         try:
             if i['name']== 'sf':
                 if not i['tk'] in daySummary:
@@ -132,8 +136,8 @@ def onTick(ws, tick):
                     temp['symbol']= tokenSymbolMap[i['tk']] # example 'TATACHEM'
                     temp['token']= i['tk'] # example '3561'
                     daySummary[i['tk']]= temp
-                    daySummary[i['tk']]['intervalStartTime']= dt.datetime.now()
-                    daySummary[i['tk']]['lastStrategyTime']= dt.datetime.now()
+                    daySummary[i['tk']]['intervalStartTime']= roundOffTime(dt.datetime.now(), 'minute')
+                    daySummary[i['tk']]['lastStrategyTime']= roundOffTime(dt.datetime.now(), 'minute')
                 x= df.socket(i, daySummary[i['tk']])
                 if x!=0:
                     daySummary[i['tk']]= x

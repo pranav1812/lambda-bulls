@@ -9,12 +9,12 @@ import requests
 
 # dic => temporary interval summary dictionary of all selected stocks 
 
-def generateFileName(token, symbol= 'unknown'):
+def generateFileName(token, symbol):
     fileName= datetime.now().strftime('%a_%d_%b_%y_')+token+'_'+symbol+'.csv'
     #print(fileName)
     return fileName
 
-def newEntry(dic, token, symbol= 'unknown'): # function to insert a new row into the csv
+def newEntry(dic, token, symbol): # function to insert a new row into the csv
     try:
         folder= os.path.join(os.getcwd(), 'daySummary')
         fileName= generateFileName(token, symbol)

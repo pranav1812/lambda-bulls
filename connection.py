@@ -102,7 +102,14 @@ intervalSummary= {
     'ema13':'NA',
     'ema26':'NA',
     'currentResistance':'NA',
-    'currentSupport':'NA'
+    'currentSupport':'NA',
+    'pivotpoint': 'NA',
+    'r1': 'NA',
+    'r2': 'NA',
+    'r3': 'NA',
+    's1': 'NA',
+    's2': 'NA',
+    's3': 'NA'
 }
 
 tokenSymbolMap= {} # reverse of stocktokens dictionary
@@ -145,24 +152,7 @@ def onTick(ws, tick):
                     temp['token']= i['tk'] # example '3561'
                     daySummary[i['tk']]= temp
                     daySummary[i['tk']]['intervalStartTime']= roundOffTime(dt.datetime.now(), 'minute')
-                    temp= {
-                        'pivotpoint': 303.05,
-                        's1': 301,
-                        's2': 299.6,
-                        's3': 297.6,
-                        'r1': 305.05,
-                        'r2': 306.35,
-                        'r3': 308.55,
-                        'ema9': 313.67,
-                        'ema13': 313.21,
-                        'ema26': 311.82,
-                        'ema50': 309.96,
-                        'currentResistance': 314,
-                        'currentSupport': 308.55,
-                        'vwap': 313
-                    } 
-                    for key in temp:
-                        daySummary[i['tk']][key]= temp[key]
+                    
                     daySummary[i['tk']]['intervalStartTime']= daySummary[i['tk']]['intervalStartTime']- dt.timedelta(minutes= 5)
                     daySummary[i['tk']]['lastStrategyTime']= roundOffTime(dt.datetime.now(), 'minute')
                     print('3')    

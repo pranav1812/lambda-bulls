@@ -23,19 +23,17 @@ def ema(currPrice, prevEma, n ):
 
 def makeReady(dic, fileName):
     path= os.path.join(os.getcwd(), 'daySummary', fileName)
-    # df= pd.read_csv(path)
+    df= pd.read_csv(path)
     # update original dictionary. so don't make copy of dic
     # ----------------- logic here -----------------
     obj = vwap(dic['intervalHigh'],dic['intervalLow'],dic['currentPrice'],dic['intervalVolume'],dic['commulativeTotal'],dic['commulativeVolume'])
     dic['commulativeTotal'] = obj[1]
     dic['vwap'] = obj[0]
 
-    dic['ema50'] = ema(dic['currentPrice'],dic['ema50'],50)
-    dic['ema13'] = ema(dic['currentPrice'],dic['ema13'],13)
-    dic['ema9']  = ema(dic['currentPrice'],dic['ema9'],9)
-    dic['ema26'] = ema(dic['currentPrice'],dic['ema26'],26)
-
-
-    
+    dic['ema50'] = ema(dic['currentPrice'],df['ema50'].iloc[-1], 50)
+    dic['ema13'] = ema(dic['currentPrice'],df['ema13'].iloc[-1], 13)
+    dic['ema9']  = ema(dic['currentPrice'],df['ema9'].iloc[-1], 9)
+    dic['ema26'] = ema(dic['currentPrice'],df['ema26'].iloc[-1], 26)
+   
     # -----------------logic ends ------------------
     return dic

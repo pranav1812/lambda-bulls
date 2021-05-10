@@ -61,82 +61,82 @@ def strategy(feed):
     # Check its presence before reading
     # print('input: ',feed)
     
-    
-    if feed['lastStrategyPrice']== 'NA':
-        feed['lastStrategyPrice']= feed['currentPrice']
+    if dt.datetime.now().hour >9 or dt.datetime.now().minute > 30: # 9:30 se pehle koi trade nahi leni
+        if feed['lastStrategyPrice']== 'NA':
+            feed['lastStrategyPrice']= feed['currentPrice']
 
 
-    # # read csv
-    # df= pd.read_csv(os.path.join(folder, fileName))
-    # # df mai sab kuchh hoga jo strategy lagane ke liye chahiye
+        # # read csv
+        # df= pd.read_csv(os.path.join(folder, fileName))
+        # # df mai sab kuchh hoga jo strategy lagane ke liye chahiye
 
-    filename = 'orders.csv'
-    folder = os.path.join(os.getcwd(),'daySummary')
-    
-    ##############
-    weightage = {
-        'vwap':.2, 
-        'ema': .4, 
-        'piv': .4
-    }
-    #############
-    print('8.2.1')
-    
-    buySum = 0
-    sellSum = 0
-    # print('8.2.2')
-    vwapS = vwapStrategy(feed, weightage)
-    # print('8.2.3')
-    emaS9 = emaStrategy(feed,9, weightage)
-    # print('8.2.4')
-
-    emaS13 = emaStrategy(feed, 13, weightage)
-    # print('8.2.5')
-
-    emaS26 = emaStrategy(feed, 26, weightage)
-    # print('8.2.6')
-
-    emaS50 = emaStrategy(feed, 50, weightage)
-    
-
-    pivotS = pivotStrategy(feed,  weightage)
-    
-
-    buySum = vwapS[0]+emaS50[0]+emaS26[0]+emaS13[0]+emaS9[0]+pivotS[0]
-    sellSum = vwapS[1]+emaS50[1]+emaS26[1]+emaS13[1]+emaS9[1]+pivotS[1]
-    
-
-    print('diff', abs(buySum - sellSum))
-    #############################
-    if abs(buySum - sellSum) > .15:
-    ##############################
-        print('reached')
-        dct = {
-            'orderPrice':feed['currentPrice'],
-            'symbol': feed['symbol']
-        }
-
-        if buySum > sellSum:
-            dct['order'] = 'BUY'
-            dct['stopLoss'] = 0.995*feed['currentPrice']
-            dct['targetPrice'] = 1.007*feed['currentPrice']
-        else:
-            dct['order'] = 'SELL'
-            dct['stopLoss'] = 1.005*feed['currentPrice']
-            dct['targetPrice'] = 0.993*feed['currentPrice']
-        dct['timeStamp'] = dt.datetime.now()
-
-        if filename in os.listdir(folder):
-            print('appending row')
-            x = pd.read_csv(os.path.join(folder,filename))
-            x = x.append(dct,ignore_index=True)
-            x.to_csv(os.path.join(folder,filename),index=False)
-            print('appended row')
-        else:
-            x = pd.DataFrame(columns=list(dct.keys()))
-            row = [dct[i] for i in dct]
-            x.loc[0]=row
-            x.to_csv(os.path.join(folder,filename),index=False)
-
+        filename = 'orders.csv'
+        folder = os.path.join(os.getcwd(),'daySummary')
         
-    # pehle 5 min toh exist hi ni karegi file toh bass ignore karo
+        ##############
+        weightage = {
+            'vwap':.2, 
+            'ema': .4, 
+            'piv': .4
+        }
+        #############
+        print('8.2.1')
+        
+        buySum = 0
+        sellSum = 0
+        # print('8.2.2')
+        vwapS = vwapStrategy(feed, weightage)
+        # print('8.2.3')
+        emaS9 = emaStrategy(feed,9, weightage)
+        # print('8.2.4')
+
+        emaS13 = emaStrategy(feed, 13, weightage)
+        # print('8.2.5')
+
+        emaS26 = emaStrategy(feed, 26, weightage)
+        # print('8.2.6')
+
+        emaS50 = emaStrategy(feed, 50, weightage)
+        
+
+        pivotS = pivotStrategy(feed,  weightage)
+        
+
+        buySum = vwapS[0]+emaS50[0]+emaS26[0]+emaS13[0]+emaS9[0]+pivotS[0]
+        sellSum = vwapS[1]+emaS50[1]+emaS26[1]+emaS13[1]+emaS9[1]+pivotS[1]
+        
+
+        print('diff', abs(buySum - sellSum))
+        #############################
+        if abs(buySum - sellSum) > .15:
+        ##############################
+            print('reached')
+            dct = {
+                'orderPrice':feed['currentPrice'],
+                'symbol': feed['symbol']
+            }
+
+            if buySum > sellSum:
+                dct['order'] = 'BUY'
+                dct['stopLoss'] = 0.995*feed['currentPrice']
+                dct['targetPrice'] = 1.007*feed['currentPrice']
+            else:
+                dct['order'] = 'SELL'
+                dct['stopLoss'] = 1.005*feed['currentPrice']
+                dct['targetPrice'] = 0.993*feed['currentPrice']
+            dct['timeStamp'] = dt.datetime.now()
+
+            if filename in os.listdir(folder):
+                print('appending row')
+                x = pd.read_csv(os.path.join(folder,filename))
+                x = x.append(dct,ignore_index=True)
+                x.to_csv(os.path.join(folder,filename),index=False)
+                print('appended row')
+            else:
+                x = pd.DataFrame(columns=list(dct.keys()))
+                row = [dct[i] for i in dct]
+                x.loc[0]=row
+                x.to_csv(os.path.join(folder,filename),index=False)
+
+        # finally lastStrategyPrice ko update krdo
+        feed['lastStrategyPrice']= feed['currentPrice']

@@ -153,7 +153,7 @@ def onTick(ws, tick):
                     daySummary[i['tk']]= temp
                     daySummary[i['tk']]['intervalStartTime']= roundOffTime(dt.datetime.now(), 'minute')
                     
-                    daySummary[i['tk']]['intervalStartTime']= daySummary[i['tk']]['intervalStartTime']- dt.timedelta(minutes= 5)
+                    daySummary[i['tk']]['intervalStartTime']= daySummary[i['tk']]['intervalStartTime']
                     daySummary[i['tk']]['lastStrategyTime']= roundOffTime(dt.datetime.now(), 'minute')
                     print('3')    
                 x= df.socket(i, daySummary[i['tk']])

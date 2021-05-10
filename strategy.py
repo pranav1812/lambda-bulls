@@ -62,6 +62,7 @@ def pivotStrategy(feed, df, weightage):
 def strategy(feed): 
     # upar wali sari strategies ka mix + don't return anything: either print the call or add a row to orders.csv file. 
     # Check its presence before reading
+    # print('input: ',feed)
     fileName= generateFileName(feed['token'], feed['symbol'])
     folder= os.path.join(os.getcwd(), 'daySummary')
 
@@ -79,29 +80,41 @@ def strategy(feed):
         'piv': .4
     }
     #############
-
+    print('8.2.1')
     if fileName in os.listdir(folder):
         # logic
         buySum = 0
         sellSum = 0
-
+        # print('8.2.2')
         vwapS = vwapStrategy(feed, df, weightage)
+        # print('8.2.3')
         emaS9 = emaStrategy(feed,df,9, weightage)
+        # print('8.2.4')
+
         emaS13 = emaStrategy(feed,df,13, weightage)
+        # print('8.2.5')
+
         emaS26 = emaStrategy(feed,df,26, weightage)
+        # print('8.2.6')
+
         emaS50 = emaStrategy(feed,df,50, weightage)
+        
+
         pivotS = pivotStrategy(feed, df, weightage)
+        
 
         buySum = vwapS[0]+emaS50[0]+emaS26[0]+emaS13[0]+emaS9[0]+pivotS[0]
         sellSum = vwapS[1]+emaS50[1]+emaS26[1]+emaS13[1]+emaS9[1]+pivotS[1]
+        
 
-
+        print('diff', abs(buySum - sellSum))
         #############################
-        if abs(buySum - sellSum) > .5:
+        if abs(buySum - sellSum) > .15:
         ##############################
-            
+            print('reached')
             dct = {
-            'orderPrice':feed['currentPrice']
+            'orderPrice':feed['currentPrice'],
+            'symbol': feed['symbol']
             }
 
             if buySum > sellSum:
@@ -115,9 +128,11 @@ def strategy(feed):
             dct['timeStamp'] = dt.datetime.now()
 
             if filename in os.listdir(folder):
+                print('appending row')
                 x = pd.read_csv(os.path.join(folder,filename))
                 x = x.append(dct,ignore_index=True)
                 x.to_csv(os.path.join(folder,filename),index=False)
+                print('appended row')
             else:
                 x = pd.DataFrame(columns=list(dct.keys()))
                 row = [dct[i] for i in dct]

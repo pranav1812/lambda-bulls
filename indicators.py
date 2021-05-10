@@ -15,15 +15,15 @@ def vwap(high, low, close, vol, commTotal, commVol):
     return [vwap, commTotal, commVol]
 
 def ema(currPrice, prevEma, n ):
-    logger.info("Calculating EMA")
+    # logger.info("Calculating EMA")
     noOfPeriods = n
     k = 2/(noOfPeriods + 1)
-    emavg = K * ( currPrice - prevEma ) + prevEma   # ema = K * ( currPrice - prevEma ) + prevEma
+    emavg = k * ( currPrice - prevEma ) + prevEma   # ema = K * ( currPrice - prevEma ) + prevEma
     return emavg
 
 def makeReady(dic, fileName):
     path= os.path.join(os.getcwd(), 'daySummary', fileName)
-    df= pd.read_csv(path)
+    # df= pd.read_csv(path)
     # update original dictionary. so don't make copy of dic
     # ----------------- logic here -----------------
     obj = vwap(dic['intervalHigh'],dic['intervalLow'],dic['currentPrice'],dic['intervalVolume'],dic['commulativeTotal'],dic['commulativeVolume'])

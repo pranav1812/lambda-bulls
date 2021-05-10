@@ -122,7 +122,7 @@ def onTick(ws, tick):
     global intervalSummary, daySummary, tokenSymbolMap
 
     # comment krni hai ye line
-    # print('Ticks: ', tick)
+    #print('Tick: ', tick)
     for i in tick:
         for key in i:
             try:
@@ -130,25 +130,52 @@ def onTick(ws, tick):
                     i[key]= float(i[key])
             except:
                 continue
+        print('name: ', i.get('name', 'undefined'))
+        # print('tick: ', i)
         try:
+                
             if i['name']== 'sf':
+                  
                 if not i['tk'] in daySummary:
                     temp= deepcopy(intervalSummary)
                     temp['symbol']= tokenSymbolMap[i['tk']] # example 'TATACHEM'
                     temp['token']= i['tk'] # example '3561'
                     daySummary[i['tk']]= temp
                     daySummary[i['tk']]['intervalStartTime']= roundOffTime(dt.datetime.now(), 'minute')
+                    temp= {
+                        'pivotpoint': 303.05,
+                        's1': 301,
+                        's2': 299.6,
+                        's3': 297.6,
+                        'r1': 305.05,
+                        'r2': 306.35,
+                        'r3': 308.55,
+                        'ema9': 313.67,
+                        'ema13': 313.21,
+                        'ema26': 311.82,
+                        'ema50': 309.96,
+                        'currentResistance': 314,
+                        'currentSupport': 308.55,
+                        'vwap': 313
+                    } 
+                    for key in temp:
+                        daySummary[i['tk']][key]= temp[key]
+                    daySummary[i['tk']]['intervalStartTime']= daySummary[i['tk']]['intervalStartTime']- dt.timedelta(minutes= 5)
                     daySummary[i['tk']]['lastStrategyTime']= roundOffTime(dt.datetime.now(), 'minute')
+                    print('3')    
                 x= df.socket(i, daySummary[i['tk']])
+                   
                 if x!=0:
                     daySummary[i['tk']]= x
+                    
 
 
                 # ------------- save to CSV after 5 minutes------------------
                 diff= dt.datetime.now() - daySummary[i['tk']]['intervalStartTime'] 
+                   
                 if diff.total_seconds() >= 5*60: # 5 mins
                     toCsv.newEntry(daySummary[i['tk']], i['tk'], daySummary[i['tk']]['symbol'])
-
+                       
                     # -----------------------------------------------------------------------------
 
                     daySummary[i['tk']]['intervalStartTime']= roundOffTime(dt.datetime.now(), 'minute') # roundoff to latest 5 min
@@ -159,14 +186,19 @@ def onTick(ws, tick):
                     daySummary[i['tk']]['intervalLow']= daySummary[i['tk']]['currentPrice']
                     daySummary[i['tk']]['intervalVolume']= 0
                     daySummary[i['tk']]['intervalOpenVolume']= daySummary[i['tk']]['commulativeVolume']
-
+                print('8')    
                 # ------------- apply strategy function after 10 sec ------------------
                 diff= dt.datetime.now() - daySummary[i['tk']]['lastStrategyTime']
+                
                 if diff.total_seconds() >= 10:
+                    print('8.2')
                     strategy(daySummary[i['tk']])
+                    print('8.3')
                     daySummary[i['tk']]['lastStrategyTime']= roundOffTime(dt.datetime.now(), 'second') # roundoff to latest 10 sec
-                                    
+                    
+                print('9')                            
         except:
+            
             print('some error might have occured. But nothing to worry')
 
 def onConnect(ws, response):

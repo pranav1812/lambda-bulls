@@ -30,7 +30,19 @@ def newEntry(dic, token, symbol): # function to insert a new row into the csv
         else:
             # call required data from node API and store the response to a dictionary called temp 
 
-            temp= {} # would be response from api. includes 1st vwap, pivot, 3 supports, 3 resistances, ema (13, 26, 50) 
+            temp= {
+                'pivotpoint': 303.05,
+                's1': 301,
+                's2': 299.6,
+                's3': 297.6,
+                'r1': 305.05,
+                'r2': 306.35,
+                'r3': 308.55,
+                'ema9': 313.67,
+                'ema13': 313.21,
+                'ema26': 311.82,
+                'ema50': 309.96
+            } # would be response from api. includes 1st vwap, pivot, 3 supports, 3 resistances, ema (13, 26, 50) 
 
             # #################################################
 

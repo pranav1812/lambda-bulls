@@ -4,7 +4,7 @@ def socket(feed, prev={}):
 
     try:
         # only full feed will not raise exception
-        prev['currentPrice']= feed['ltp']-5
+        prev['currentPrice']= feed['ltp']
         prev['commulativeVolume']= feed['v']
         prev['buyOffers']= feed['tbq']
         prev['sellOffers']= feed['tsq']

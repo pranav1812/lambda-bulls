@@ -1,11 +1,11 @@
 from numpy import NaN
 import pandas as pd 
 import os # to check if a csv file with the specified name exists in day summary folder
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import json
 from indicators import makeReady
-import requests
+from connection import getHistoricData as gh
 
 # dic => temporary interval summary dictionary of all selected stocks 
 
@@ -30,6 +30,26 @@ def newEntry(dic, token, symbol): # function to insert a new row into the csv
         else:
             # call required data from node API and store the response to a dictionary called temp 
 
+            # ----------------------------- Historical API se data nikalne ke liye --------------------------- 
+            # def formatDate(x):
+            #     mnt= ''
+            #     if x.month< 10:
+            #         mnt= '0'+str(x.month)
+            #     else:
+            #         mnt= str(x.month)
+            #     day= ''
+            #     if x.day< 10:
+            #         day= '0'+str(x.day)
+            #     else:
+            #         day= str(x.day)
+            #     return str(x.year)+ '-'+ mnt + '-'+ day 
+
+            # x= datetime.now()
+            # y= timedelta(days= 2)
+            # fromDate= formatDate(x) + ' 09:00'
+            # toDate= formatDate(x-y) + ' 04:00'
+            # data= gh(dic['symbol'], 'ONE_DAY', fromDate, toDate) 
+            # -----------------------------------------------
             temp= {
                 'pivotpoint': 303.05,
                 's1': 301,

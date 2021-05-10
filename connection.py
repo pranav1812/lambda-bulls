@@ -33,7 +33,7 @@ def apiLogin():
         'apiObj': smartApi
     }
 
-def getHistoricData(symbol, interval, fromDate, toDate):
+def getHistoricData(symbol, interval, fromDate, toDate): # (fromDate is exclusive, toDate is inclusive)
     # agar boht sara data aane wala hai toh usse chunks mai call krna, ie. period ko parts mai break krna aur parallely pichhle wale ko operate krna
     apiLoginObj= apiLogin()
     apiObj= apiLoginObj['apiObj']
@@ -59,11 +59,13 @@ def getHistoricData(symbol, interval, fromDate, toDate):
     if res['message']!= 'SUCCESS':
         print('connection error occurred, try again 2-3 times')
         sys.exit()
+    
     data= res['data']
     print('successfully connected to historical api')
-    data= df.historicDataFilter(data)
+    # data= df.historicDataFilter(data)
     # print comment krna hai baad mai
-    print('data: \n', json.loads(data))
+    print(data[-1])
+    return data[-1]
     # # abb isse send kar skte hain
 
 
@@ -75,6 +77,7 @@ feedString= ''
 intervalSummary= {
     'intervalStartTime': 'NA',
     'lastStrategyTime': 'NA',
+    'lastStrategyPrice': 'NA',
     'symbol': 'NA',
     'token': 'NA',
     'currentPrice':'NA',
@@ -214,7 +217,8 @@ def onClose(ws, code, reason):
     print(code)
     print(reason)
     print('-----------------trying to reconnect----------------')
-    createSocketConnection(['TATAMOTORS'])
+    global stockList
+    createSocketConnection(stockList)
 
 def createSocketConnection(symbols):
     feedToken= apiLogin()['feedToken']
@@ -253,6 +257,7 @@ def createSocketConnection(symbols):
 # space for debugging
 if __name__=='__main__':
     #apiLogin()
-    #getHistoricData('TATACOMM', 'ONE_DAY', '2021-03-01 09:00', '2021-04-01 16:00')
-    createSocketConnection(['TATAMOTORS'])
+    getHistoricData('TATAMOTORS', 'ONE_DAY', '2021-05-09 09:00', '2021-05-10 16:00')
+    stockList= ['TATAMOTORS']
+    # createSocketConnection(stockList)
     

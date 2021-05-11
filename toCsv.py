@@ -17,6 +17,7 @@ def generateFileName(token, symbol, date= datetime.now()):
     return fileName
 
 def newEntry(dic, token, symbol): # function to insert a new row into the csv
+    print('dictionary: ', dic)
     try:
         folder= os.path.join(os.getcwd(), 'daySummary')
         fileName= generateFileName(token, symbol)
@@ -51,9 +52,13 @@ def newEntry(dic, token, symbol): # function to insert a new row into the csv
             for i in arr:
                 if i> dic['currentPrice']:
                     dic['currentResistance']= i
+            if dic['currentResistance']== 'NA':
+                dic['currentResistance']= dic['currentPrice']*1.01
             for i in range(len(arr)-1, -1):
                 if i< dic['currentPrice']:
                     dic['currentSupport']= i
+            if dic['currentSupport']== 'NA':
+                dic['currentSupport']= dic['currentPrice']*0.99
 
 
             # ------------- making the new entry ready, by inserting indicators ----------------

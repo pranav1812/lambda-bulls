@@ -17,7 +17,7 @@ def vwapStrategy(feed, weightage):
 
     return buySum,sellSum
 
-def emaStrategy(feed,df,x, weightage):
+def emaStrategy(feed,x, weightage):
     buySum=0
     sellSum=0
     if feed['currentPrice'] > feed['ema'+str(x)] and feed['lastStrategyPrice'] < feed['ema'+str(x)]:
@@ -138,5 +138,6 @@ def strategy(feed):
                 x.loc[0]=row
                 x.to_csv(os.path.join(folder,filename),index=False)
 
-        # finally lastStrategyPrice ko update krdo
-        feed['lastStrategyPrice']= feed['currentPrice']
+    # finally lastStrategyPrice ko update krdo
+    feed['lastStrategyPrice']= feed['currentPrice']
+    print('.', end= ' ')

@@ -1,4 +1,4 @@
-from smartapi import WebSocket 
+from smartapi import SmartWebSocket as WebSocket 
 from smartapi import SmartConnect
 
 from config import authInfo
@@ -130,9 +130,8 @@ def roundOffTime(x, gap):
 
 def onTick(ws, tick):
     global intervalSummary, daySummary, tokenSymbolMap
-
     # comment krni hai ye line
-    #print('Tick: ', tick)
+    print('Tick: ', tick)
     for i in tick:
         for key in i:
             try:
@@ -140,6 +139,8 @@ def onTick(ws, tick):
                     i[key]= float(i[key])
             except:
                 continue
+        
+        ##############################
         print('name: ', i.get('name', 'undefined'), end= ' -> ')
         # print('tick: ', i)
         try:
@@ -196,21 +197,19 @@ def onTick(ws, tick):
             
             print('some error might have occured. But nothing to worry')
 
-def onConnect(ws, response):
+def onConnect(ws):
     global feedString
     print('connecting')
     print(feedString)
-    ws.websocket_connection()
-    ws.send_request(feedString, 'mw')
+    # ws.websocket_connection()
+    ws.subscribe('mw', feedString)
 
-def onClose(ws, code, reason):
-    ws.stop()
-    print('connection dropped')
-    print(code)
-    print(reason)
-    print('-----------------trying to reconnect----------------')
-    global stockList
-    createSocketConnection(stockList)
+def onClose(ws):
+    print("connection closed!!")
+
+def onError(ws, error):
+    print('ERROR OCCURRED\n--------------')
+    print(error, '\n------------')
 
 def createSocketConnection(symbols):
     feedToken= apiLogin()['feedToken']
@@ -234,11 +233,13 @@ def createSocketConnection(symbols):
     
     ss= WebSocket(feedToken, authInfo['clientCode'])
     
-    ss.on_connect= onConnect
+    ss._on_open= onConnect
 
-    ss.on_ticks= onTick
+    ss._on_message= onTick
 
-    ss.on_close= onClose
+    ss._on_error= onError
+
+    ss._on_close= onClose
 
     ss.connect()
     print(feedToken)

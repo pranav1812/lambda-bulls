@@ -6,12 +6,7 @@ def socket(feed, prev={}):
         # only full feed will not raise exception
         prev['currentPrice']= feed['ltp']
         prev['commulativeVolume']= feed['v']
-        prev['buyOffers']= feed['tbq']
-        prev['sellOffers']= feed['tsq']
-        prev['bestBuyPrice']= feed['bp']
-        prev['bestSellPrice']= feed['sp']
-        prev['bestBuyVol']= feed['bq']
-        prev['bestSellVol']= feed['bs']
+        
         # prev['vwap']= feed['ap'] ........  will be updated by our own function
         prev['intervalHigh']= max(feed['ltp'], prev['intervalHigh'])
         prev['intervalLow']= min(feed['ltp'], prev['intervalLow'])

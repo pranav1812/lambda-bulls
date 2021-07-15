@@ -24,7 +24,7 @@ def newEntry(dic, token, symbol): # function to insert a new row into the csv
         if fileName in os.listdir(folder):
             df= pd.read_csv(os.path.join(folder, fileName))
 
-            if dic['vwap']== 'NA': # matlab initial indicators nahi aaye hue
+            if dic['vwap']== -1: # matlab initial indicators nahi aaye hue
                 dic['vwap']= df['vwap'].iloc[-1]
                 dic['ema9']= df['ema9'].iloc[-1]
                 dic['ema13']= df['ema9'].iloc[-1]
@@ -52,12 +52,12 @@ def newEntry(dic, token, symbol): # function to insert a new row into the csv
             for i in arr:
                 if i> dic['currentPrice']:
                     dic['currentResistance']= i
-            if dic['currentResistance']== 'NA':
+            if dic['currentResistance']==-1:
                 dic['currentResistance']= dic['currentPrice']*1.01
             for i in range(len(arr)-1, -1):
                 if i< dic['currentPrice']:
                     dic['currentSupport']= i
-            if dic['currentSupport']== 'NA':
+            if dic['currentSupport']== -1:
                 dic['currentSupport']= dic['currentPrice']*0.99
 
 

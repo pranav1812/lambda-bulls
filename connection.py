@@ -6,11 +6,15 @@ from stockTokens import stockTokens
 import dataFilter as df
 import toCsv
 from strategy import strategy
+from indicators import preparePastData
 
 import json
 from copy import deepcopy
 import sys
 import datetime as dt
+import numpy as np
+import pandas as pd
+import os
 
 
 def apiLogin():
@@ -32,6 +36,13 @@ def apiLogin():
         'feedToken': feedToken,
         'apiObj': smartApi
     }
+
+def convertTimeStamp(timestampString):
+    l= timestampString.split('T')
+    date, time= l[0], l[1]
+    timestampString= date + ' ' + time.split('+')[0]
+    
+    return dt.datetime.strptime(timestampString, '%Y-%m-%d %H:%M:%S') 
 
 def getHistoricData(symbol, interval, fromDate, toDate): # (fromDate is exclusive, toDate is inclusive)
     # agar boht sara data aane wala hai toh usse chunks mai call krna, ie. period ko parts mai break krna aur parallely pichhle wale ko operate krna
@@ -64,10 +75,44 @@ def getHistoricData(symbol, interval, fromDate, toDate): # (fromDate is exclusiv
     print('successfully connected to historical api')
     # data= df.historicDataFilter(data)
     # print comment krna hai baad mai
-    print(data[-1])
-    return data[-1]
+    for i in range(len(data)):
+        data[i][0]= convertTimeStamp(data[i][0])
+    
+    return data
     # # abb isse send kar skte hain
 
+def getDateRange():
+    # Format: '2021-05-20 16:00'
+    # past 15 days is enough
+    a= dt.timedelta(days= 15)
+    x= dt.datetime.now()
+    y= x - a
+
+    return str(y.date()) + ' 09:00', str(x.date()) + ' 09:00'
+
+def prepareStockData(symbol):
+    date1, date2= getDateRange()
+    try:
+        tkn= stockTokens[symbol]
+    except:
+        print('wrong stock symbol maybe, check stocksTokens.py for reference')
+        sys.exit()
+    print(date1, date2)
+    # '2021-06-24 09:15', '2021-07-09 09:15'
+    data= getHistoricData(symbol, 'FIVE_MINUTE', date1, date2)
+    data= np.array(data)
+    tempDic= {}
+    columns= ['intervalStartTime', 'intervalOpen', 'intervalHigh', 'intervalLow', 'currentPrice', 'intervalVolume']
+    for i, key in enumerate(columns):
+        temp= []
+        for j in data:
+            temp.append(j[i])
+        tempDic[key]= temp
+    df= pd.DataFrame(tempDic)
+    df= preparePastData(df, tkn, symbol)
+    df.to_csv(os.path.join(os.getcwd(), 'daySummary', 'tatamotor.csv'), index= False)
+    
+    
 
 #*********************************
 
@@ -112,6 +157,8 @@ intervalSummary= {
     's3': 'NA'
 }
 
+
+
 tokenSymbolMap= {} # reverse of stocktokens dictionary
 
 daySummary= {} #  dictionary of interval summaries of all stocks in consideration
@@ -127,6 +174,8 @@ def roundOffTime(x, gap):
         sys.exit()
     return y
 
+def temp(ws, message):
+    print(message)
 
 def onTick(ws, tick):
     global intervalSummary, daySummary, tokenSymbolMap
@@ -202,7 +251,7 @@ def onConnect(ws):
     print('connecting')
     print(feedString)
     # ws.websocket_connection()
-    ws.subscribe('mw', feedString)
+    ws.subscribe('mw', "nse_cm|2885&nse_cm|1594&nse_cm|11536")
 
 def onClose(ws):
     print("connection closed!!")
@@ -235,7 +284,8 @@ def createSocketConnection(symbols):
     
     ss._on_open= onConnect
 
-    ss._on_message= onTick
+    # ss._on_message= onTick
+    ss._on_message= temp
 
     ss._on_error= onError
 
@@ -250,7 +300,7 @@ def createSocketConnection(symbols):
 # space for debugging
 if __name__=='__main__':
     #apiLogin()
-    #getHistoricData('TATAMOTORS', 'ONE_DAY', '2021-05-09 09:00', '2021-05-10 16:00')
-    stockList= ['TATAMOTORS']
-    createSocketConnection(stockList)
+    prepareStockData('TATAMOTORS')
+    # stockList= ['TATAMOTORS', 'RELIANCE']
+    # createSocketConnection(stockList)
     
